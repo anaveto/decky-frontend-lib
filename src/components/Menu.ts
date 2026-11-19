@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import type { PopupCreationOptions } from '../globals/stores/popupmanager';
-import { type Export, findModuleByExport, findModuleDetailsByExport, findModuleExport } from '../webpack';
+import { type Export, findModuleByExport, findModuleDetailsByExport, findModuleExport, modules } from '../webpack';
 import type { FooterLegendProps } from './FooterLegend';
 
 // Separate interface, since one of webpack module exports uses this exact object,
@@ -124,10 +124,35 @@ export interface MenuProps extends FooterLegendProps {
   children?: ReactNode;
 }
 
-const MenuModule = findModuleDetailsByExport((e: Export) => e?.render?.toString()?.includes('bPlayAudio:') || (e?.prototype?.OnOKButton && e?.prototype?.OnMouseEnter));
+// Vite builds of Steam have no menu module: find the menu item class, then the components Steam nests it in
+const viteScope = modules.get('vite');
+const viteMenuItemName = viteScope && Object.keys(viteScope).find((name) => {
+  const e = viteScope[name];
+  return typeof e == 'function' && e.prototype?.OnOKButton && e.prototype?.OnMouseEnter && e.toString().includes('onDisabledItemSelected');
+});
 
-export const Menu: FC<MenuProps> =
-	findModuleExport((e: Export) => e?.prototype?.HideIfSubmenu && e?.prototype?.HideMenu) || // Legacy Menu
+function findViteMenuParent(filter: (source: string) => boolean) {
+  if (!viteMenuItemName) return undefined;
+  const parent = new RegExp(
+    `\\(([\\w$]+),\\{[^{}]*?children:\\[?\\(0,[\\w$]+\\.jsxs?\\)\\(${viteMenuItemName.replace(/\$/g, '\\$')},`,
+    'g',
+  );
+  const counts = new Map<string, number>();
+  for (const e of Object.values(viteScope)) {
+    if (typeof e != 'function') continue;
+    for (const match of e.toString().matchAll(parent)) counts.set(match[1], (counts.get(match[1]) ?? 0) + 1);
+  }
+  const [name] = [...counts].sort((a, b) => b[1] - a[1]).find(([name]) => filter(viteScope[name]?.toString?.() ?? '')) ?? [];
+  return name && viteScope[name];
+}
+
+const MenuModule = viteScope
+  ? undefined
+  : findModuleDetailsByExport((e: Export) => e?.render?.toString()?.includes('bPlayAudio:') || (e?.prototype?.OnOKButton && e?.prototype?.OnMouseEnter));
+
+export const Menu: FC<MenuProps> = viteScope
+  ? findViteMenuParent((source) => source.includes('useId') && source.includes('labelId'))
+  : findModuleExport((e: Export) => e?.prototype?.HideIfSubmenu && e?.prototype?.HideMenu) || // Legacy Menu
 	(Object.values(MenuModule?.[0] ?? {}).find((e) => e?.toString?.()?.includes?.(`useId`) && e?.toString?.()?.includes?.(`labelId`)) as FC<MenuProps>); // New Menu 6/15/2025
 
 export interface MenuGroupProps {
@@ -137,8 +162,10 @@ export interface MenuGroupProps {
 }
 
 // New || Old 9/14/2026
-const MenuGroupModule = findModuleByExport(e => e?.prototype?.Focus && e?.prototype?.OnOKButton && (e?.prototype?.render?.toString().includes?.(`this.props.tone=="emphasis"`) || e?.prototype?.render?.toString().includes?.(`"emphasis"==this.props.tone`)));
-export const MenuGroup: FC<MenuGroupProps> = MenuGroupModule && Object.values(MenuGroupModule).find((e: Export) => typeof e == "function" && e?.toString?.()?.includes("bInGamepadUI:"));
+const MenuGroupModule = !viteScope && findModuleByExport(e => e?.prototype?.Focus && e?.prototype?.OnOKButton && (e?.prototype?.render?.toString().includes?.(`this.props.tone=="emphasis"`) || e?.prototype?.render?.toString().includes?.(`"emphasis"==this.props.tone`)));
+export const MenuGroup: FC<MenuGroupProps> = viteScope
+  ? findViteMenuParent((source) => source.includes('bInGamepadUI:'))
+  : MenuGroupModule && Object.values(MenuGroupModule).find((e: Export) => typeof e == "function" && e?.toString?.()?.includes("bInGamepadUI:"));
 export interface MenuItemProps extends FooterLegendProps {
   bInteractableItem?: boolean;
   onClick?(evt: Event): void;
@@ -152,7 +179,7 @@ export interface MenuItemProps extends FooterLegendProps {
   children?: ReactNode;
 }
 
-export const MenuItem: FC<MenuItemProps> = MenuModule?.[1];
+export const MenuItem: FC<MenuItemProps> = viteScope ? viteMenuItemName && viteScope[viteMenuItemName] : MenuModule?.[1];
 
 export const MenuSeparator: FC = findModuleExport(
   (e: Export) => typeof e === 'function' && /className:.+?\.ContextMenuSeparator/.test(e.toString?.()),
