@@ -1,4 +1,8 @@
 import { findClassModule } from '../class-mapper';
+import { Field } from '../components/Field';
+import { PanelSection, PanelSectionRow } from '../components/Panel';
+import { Export, findModuleExport, modules } from '../webpack';
+import { fakeRenderComponent } from './react/react';
 // TODO document how to generate these?
 type QuickAccessMenuClasses = Record<
   | 'ActiveTab'
@@ -1142,10 +1146,90 @@ type VRDashboardClasses = Record<
   string
 >
 
-export const quickAccessMenuClasses = (findClassModule((m) => m.Title && m.QuickAccessMenu) ?? {}) as QuickAccessMenuClasses;
+// Vite builds of Steam inline the class names, so the class modules are gone: read the classes of the elements that
+// Steam's components render
+function viteClasses(read: () => Record<string, string | undefined>) {
+  if (!modules.has('vite')) return {};
+  return fakeRenderComponent(() => {
+    try {
+      return read();
+    } catch (e) {
+      return {};
+    }
+  });
+}
+
+function viteQuickAccessMenuClasses() {
+  return viteClasses(() => {
+    const title = findModuleExport(
+      (e: Export) =>
+        typeof e == 'function' &&
+        /^function [\w$]*\([\w$]\)\{return\(0,[\w$]+\.jsx\)\("div",\{className:[\w$]+,children:[\w$]+\([\w$]+\.locId\)\}\)\}$/.test(e.toString()),
+    );
+    return { Title: title({ locId: '#QuickAccess_Tab_Settings_Title' }).props.className };
+  });
+}
+
+function viteQuickAccessControlsClasses() {
+  return viteClasses(() => {
+    const section = (PanelSection as any)({ title: ' ' });
+    const title = section.props.children[0];
+    const row: any = PanelSectionRow;
+    return {
+      PanelSection: section.props.className,
+      PanelSectionTitle: title.props.className,
+      Text: title.props.children[0].props.className,
+      PanelSectionRow: (row.render ?? row)({}, null).props.className,
+    };
+  });
+}
+
+function viteGamepadDialogClasses() {
+  return viteClasses(() => {
+    const plain = {
+      label: ' ',
+      children: ' ',
+      bottomSeparator: 'none',
+      padding: 'none',
+      childrenContainerWidth: 'min',
+      spacingBetweenLabelAndChild: 'none',
+      highlightOnFocus: false,
+      verticalAlignment: 'top',
+      transparentBackground: true,
+    };
+    const render = (props: object = {}) => (Field as any)({ ...plain, ...props }, null);
+    const field = render();
+    const fieldClasses = field.props.className.split(' ');
+    const modifier = (props: object) =>
+      render(props)
+        .props.className.split(' ')
+        .find((name: string) => !fieldClasses.includes(name));
+    const [left, right] = field.props.children;
+    const labelRow = left.props.children[0];
+    const childrenWithIcon = right.props.children;
+    return {
+      Field: fieldClasses[0],
+      FieldLeftColumn: left.props.className,
+      FieldLabelRow: labelRow.props.className,
+      FieldLabel: labelRow.props.children.props.className,
+      FieldRightColumn: right.props.className,
+      FieldChildrenWithIcon: childrenWithIcon.props.className,
+      FieldChildrenInner: childrenWithIcon.props.children[1].props.className,
+      WithBottomSeparatorStandard: modifier({ bottomSeparator: 'standard' }),
+      WithBottomSeparatorThick: modifier({ bottomSeparator: 'thick' }),
+      StandardPadding: modifier({ padding: 'standard' }),
+      CompactPadding: modifier({ padding: 'compact' }),
+      HighlightOnFocus: modifier({ highlightOnFocus: true }),
+      Disabled: modifier({ disabled: true }),
+      VerticalAlignCenter: modifier({ verticalAlignment: 'center' }),
+    };
+  });
+}
+
+export const quickAccessMenuClasses = (findClassModule((m) => m.Title && m.QuickAccessMenu) ?? viteQuickAccessMenuClasses()) as QuickAccessMenuClasses;
 export const scrollPanelClasses = (findClassModule((m) => m.ScrollPanel) ?? {}) as ScrollPanelClasses;
-export const gamepadDialogClasses = (findClassModule((m) => m.GamepadDialogContent && !m.BindingButtons) ?? {}) as GamepadDialogClasses;
-export const quickAccessControlsClasses = (findClassModule((m) => m.BatteryPercentageLabel && m.PanelSection && !m['vr-dashboard-bar-height'] && !m.QuickAccessMenu && !m.QuickAccess && !m.PerfProfileInfo) ?? {}) as QuickAccessControlsClasses;
+export const gamepadDialogClasses = (findClassModule((m) => m.GamepadDialogContent && !m.BindingButtons) ?? viteGamepadDialogClasses()) as GamepadDialogClasses;
+export const quickAccessControlsClasses = (findClassModule((m) => m.BatteryPercentageLabel && m.PanelSection && !m['vr-dashboard-bar-height'] && !m.QuickAccessMenu && !m.QuickAccess && !m.PerfProfileInfo) ?? viteQuickAccessControlsClasses()) as QuickAccessControlsClasses;
 export const updaterFieldClasses = (findClassModule((m) => m.OOBEUpdateStatusContainer) ?? {}) as UpdaterFieldClasses;
 export const playSectionClasses = (findClassModule((m) => m.PlayBarDetailLabel) ?? {}) as PlaySectionClasses;
 export const gamepadSliderClasses = (findClassModule((m) => m.SliderControlPanelGroup) ?? {}) as GamepadSliderClasses;
