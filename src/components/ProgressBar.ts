@@ -31,8 +31,9 @@ export const ProgressBar = findModuleExport((e: Export) =>
 ) as FC<ProgressBarProps>;
 
 export const ProgressBarWithInfo = findModuleExport((e: Export) =>
-  // new || old
-  e?.toString?.()?.includes('.ProgressBarFieldStatus,children') || e?.toString?.()?.includes('.ProgressBarFieldStatus},'),
+  // new || old || vite
+  e?.toString?.()?.includes('.ProgressBarFieldStatus,children') || e?.toString?.()?.includes('.ProgressBarFieldStatus},') ||
+  (typeof e == 'function' && e.toString().includes('rtEstimatedCompletionTime:') && e.toString().includes('childrenContainerWidth:')),
 ) as FC<ProgressBarWithInfoProps>;
 
 const progressBarItemRegex = createPropListRegex(["indeterminate", "nTransitionSec", "nProgress"]);

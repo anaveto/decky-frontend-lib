@@ -8,7 +8,9 @@ export interface ControlsListProps {
   children?: ReactNode;
 }
 
+// old || vite
 export const ControlsList: FC<ControlsListProps> = findModuleExport(
   (e: Export) =>
-    e?.toString && e.toString?.().includes('().ControlsListChild') && e.toString?.().includes('().ControlsListOuterPanel'),
+    (e?.toString && e.toString?.().includes('().ControlsListChild') && e.toString?.().includes('().ControlsListOuterPanel')) ||
+    (typeof e == 'function' && e.toString().includes('.alignItems??"left"') && e.toString().includes('.itemMaxSize??"gamepad"')),
 );

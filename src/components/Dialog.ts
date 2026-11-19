@@ -80,7 +80,7 @@ const MappedDialogDivs = new Map(
 // Old | New
 export const DialogHeader = (MappedDialogDivs.get('DialogHeader') || Object.values(CommonUIModule).find((component: Module) => {
   const str = component?.render?.toString?.();
-  return str?.includes("role:\"heading\"") && str.includes(")(\"DialogHeader\",");
+  return str?.includes("role:\"heading\"") && (str.includes(")(\"DialogHeader\",") || /[\w$]\("DialogHeader",/.test(str));
 })) as FC<DialogCommonProps>;
 
 export const DialogSubHeader = MappedDialogDivs.get('DialogSubHeader') as FC<DialogCommonProps>;
