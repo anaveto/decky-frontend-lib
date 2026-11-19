@@ -1,4 +1,5 @@
 import Logger from './logger';
+import viteClassModules from './vite-class-modules';
 
 declare global {
   interface Window {
@@ -41,6 +42,7 @@ function normalizeFunctionSource() {
 
 // Vite builds of Steam have no webpack module registry. The loader collects the top-level bindings of Steam's main
 // chunk into window.deckyViteModules: every object binding becomes a module, and all bindings together form one more.
+// Vite builds also inline the class names, so the class modules come from scripts/vite-class-modules.py.
 function initViteModuleCache(bindings: Record<string, any>) {
   normalizeFunctionSource();
   const scope: Record<string, any> = {};
@@ -58,6 +60,7 @@ function initViteModuleCache(bindings: Record<string, any>) {
     }
   }
   modules.set('vite', scope);
+  viteClassModules.forEach((m, i) => modules.set(`vite-classes-${i}`, m));
 }
 
 function initModuleCache() {
