@@ -200,8 +200,11 @@ export const CommonUIModule = findModule((m: Module) => {
   return false;
 });
 
+// The Spinner icon of Vite builds of Steam, which inline its class name
+export const viteSpinnerRegex = /\("path",\{d:"M18 10C17\.4696 10 16\.9609 9\.78929/;
+
 export const IconsModule = findModuleByExport(
-  (e) => e?.toString && /Spinner\),children:\[\(0,\w+\.jsx\)\("path",\{d:"M18 /.test(e.toString?.()) || /Spinner\)}\)?,.\.createElement\(\"path\",{d:\"M18 /.test(e.toString?.()),
+  (e) => e?.toString && /Spinner\),children:\[\(0,\w+\.jsx\)\("path",\{d:"M18 /.test(e.toString?.()) || /Spinner\)}\)?,.\.createElement\(\"path\",{d:\"M18 /.test(e.toString?.()) || viteSpinnerRegex.test(e?.toString?.()),
 );
 
 export const ReactRouter = findModuleByExport((e) => e.computeRootMatch);
