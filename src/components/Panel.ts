@@ -16,11 +16,37 @@ export interface PanelSectionProps {
 
 const [mod, panelSection] = findModuleDetailsByExport((e: Export) => e.toString?.()?.includes('.PanelSection'));
 
-export const PanelSection = panelSection as FC<PanelSectionProps>;
+// Vite builds of Steam inline the class names, so match the props instead
+const [viteScope, vitePanelSection, vitePanelSectionName] = mod
+  ? [undefined, undefined, undefined]
+  : findModuleDetailsByExport(
+      (e: Export) =>
+        typeof e == 'function' &&
+        /^function [\w$]*\([\w$]\)\{const\{title:[\w$]+,children:[\w$]+\}=[\w$]+;/.test(e.toString()) &&
+        e.toString().includes('.spinner&&'),
+    );
+
+// The row is a generic div component: take the one Steam nests directly in its panel sections most often
+function findVitePanelSectionRow() {
+  if (!viteScope) return undefined;
+  const nested = new RegExp(
+    `\\(${vitePanelSectionName.replace(/\$/g, '\\$')},\\{[^{}]*?children:\\[?\\(0,[\\w$]+\\.jsxs?\\)\\(([\\w$]+),`,
+    'g',
+  );
+  const counts = new Map<string, number>();
+  for (const e of Object.values(viteScope)) {
+    if (typeof e != 'function') continue;
+    for (const match of e.toString().matchAll(nested)) counts.set(match[1], (counts.get(match[1]) ?? 0) + 1);
+  }
+  const [name] = [...counts].sort((a, b) => b[1] - a[1])[0] ?? [];
+  return name && viteScope[name];
+}
+
+export const PanelSection = (panelSection ?? vitePanelSection) as FC<PanelSectionProps>;
 
 export interface PanelSectionRowProps {
   children?: ReactNode;
 }
-export const PanelSectionRow = Object.values(mod).filter(
-  (exp: any) => !exp?.toString?.()?.includes('.PanelSection'),
-)[0] as FC<PanelSectionRowProps>;
+export const PanelSectionRow = (mod
+  ? Object.values(mod).filter((exp: any) => !exp?.toString?.()?.includes('.PanelSection'))[0]
+  : findVitePanelSectionRow()) as FC<PanelSectionRowProps>;

@@ -15,6 +15,9 @@ export interface MarqueeProps {
   children: React.ReactNode;
 }
 
+// old || vite
 export const Marquee: FC<MarqueeProps> = findModuleExport(
-  (e: Export) => e?.toString && e.toString?.().includes('.Marquee') && e.toString?.().includes('--fade-length'),
+  (e: Export) =>
+    (e?.toString && e.toString?.().includes('.Marquee') && e.toString?.().includes('--fade-length')) ||
+    (typeof e == 'function' && e.toString().includes('"--fade-length-left"')),
 );

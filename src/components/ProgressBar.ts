@@ -24,8 +24,10 @@ export interface ProgressBarWithInfoProps extends ProgressBarItemProps {
   sOperationText?: ReactNode;
 }
 
+// old || vite
 export const ProgressBar = findModuleExport((e: Export) =>
-  e?.toString && /\.ProgressBar,(?:\w*==)?"standard"(?:==)?/.test(e.toString?.()),
+  (e?.toString && /\.ProgressBar,(?:\w*==)?"standard"(?:==)?/.test(e.toString?.())) ||
+  (typeof e == 'function' && e.toString().includes('role:"progressbar"') && e.toString().includes('nTransitionSec')),
 ) as FC<ProgressBarProps>;
 
 export const ProgressBarWithInfo = findModuleExport((e: Export) =>

@@ -1,5 +1,6 @@
 import { FC, ReactNode, RefAttributes } from 'react';
 
+import { createPropListRegex } from '../utils';
 import { Export, findModuleExport } from '../webpack';
 import { FooterLegendProps } from './FooterLegend';
 
@@ -24,7 +25,9 @@ export interface FieldProps extends FooterLegendProps {
   onClick?: (e: CustomEvent | MouseEvent) => void;
 }
 
-// new || old
-export const Field = findModuleExport((e: Export) => (e?.toString?.()?.includes('().Field') && e?.toString?.()?.includes('"shift-children-below"')) || e?.render?.toString()?.includes('"shift-children-below"')) as FC<
+const fieldPropsRegex = createPropListRegex(['childrenLayout', 'inlineWrap', 'childrenContainerWidth', 'spacingBetweenLabelAndChild'], false);
+
+// new || old || vite
+export const Field = findModuleExport((e: Export) => (e?.toString?.()?.includes('().Field') && e?.toString?.()?.includes('"shift-children-below"')) || e?.render?.toString()?.includes('"shift-children-below"') || (typeof e == 'function' && fieldPropsRegex.test(e.toString()))) as FC<
   FieldProps & RefAttributes<HTMLDivElement>
 >;

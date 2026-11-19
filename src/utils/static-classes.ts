@@ -1142,31 +1142,31 @@ type VRDashboardClasses = Record<
   string
 >
 
-export const quickAccessMenuClasses = findClassModule((m) => m.Title && m.QuickAccessMenu) as QuickAccessMenuClasses;
-export const scrollPanelClasses = findClassModule((m) => m.ScrollPanel) as ScrollPanelClasses;
-export const gamepadDialogClasses = findClassModule((m) => m.GamepadDialogContent && !m.BindingButtons) as GamepadDialogClasses;
-export const quickAccessControlsClasses = findClassModule((m) => m.BatteryPercentageLabel && m.PanelSection && !m['vr-dashboard-bar-height'] && !m.QuickAccessMenu && !m.QuickAccess && !m.PerfProfileInfo) as QuickAccessControlsClasses;
-export const updaterFieldClasses = findClassModule((m) => m.OOBEUpdateStatusContainer) as UpdaterFieldClasses;
-export const playSectionClasses = findClassModule((m) => m.PlayBarDetailLabel) as PlaySectionClasses;
-export const gamepadSliderClasses = findClassModule((m) => m.SliderControlPanelGroup) as GamepadSliderClasses;
-export const appDetailsHeaderClasses = findClassModule((m) => m.TopCapsule) as AppDetailsHeaderClasses;
-export const appDetailsClasses = findClassModule((m) => m.HeaderLoaded) as AppDetailsClasses;
-export const gamepadUIClasses = findClassModule((m) => m.BasicUiRoot) as GamepadUIClasses;
-export const gamepadTabbedPageClasses = findClassModule((m) => m.GamepadTabbedPage) as GamepadTabbedPageClasses;
-export const gamepadContextMenuClasses = findClassModule((m) => m.BasicContextMenuModal) as GamepadContextMenuClasses;
-export const achievementListClasses = findClassModule((m) => m.AchievementListItemBase && !m.Page) as AchievementListClasses;
-export const achievementPageClasses = findClassModule((m) => m.AchievementListItemBase && m.Page) as AchievementPageClasses;
-export const mainMenuAppRunningClasses = findClassModule((m) => m.AppRunningControls && m.OverlayAchievements) as MainMenuAppRunningClasses;
-export const basicAppDetailsSectionStylerClasses = findClassModule((m) => m.AppDetailsRoot) as BasicAppDetailsSectionStylerClasses;
-export const steamSpinnerClasses = findClassModule(m => m.SpinnerLoaderContainer) as SteamSpinnerClasses;
-export const footerClasses = findClassModule(m => m.QuickAccessFooter) as FooterClasses;
-export const appActionButtonClasses = findClassModule(m => m.PlayButtonContainer) as AppActionButtonClasses;
-export const libraryAssetImageClasses = findClassModule(m => m.LongTitles && m.GreyBackground) as LibraryAssetImageClasses;
-export const gamepadLibraryClasses = findClassModule(m => m.GamepadLibrary) as GamepadLibraryClasses;
-export const focusRingClasses = findClassModule(m => m.FocusRingRoot) as FocusRingClasses;
-export const searchBarClasses = findClassModule(m => m.SearchAndTitleContainer) as SearchBarClasses;
-export const mainBrowserClasses = findClassModule(m => m.MainBrowserContainer) as MainBrowserClasses;
-export const vrDashboardClasses = findClassModule(m => m.DashboardBarPopupContents && m.DashboardBar) as VRDashboardClasses;
+export const quickAccessMenuClasses = (findClassModule((m) => m.Title && m.QuickAccessMenu) ?? {}) as QuickAccessMenuClasses;
+export const scrollPanelClasses = (findClassModule((m) => m.ScrollPanel) ?? {}) as ScrollPanelClasses;
+export const gamepadDialogClasses = (findClassModule((m) => m.GamepadDialogContent && !m.BindingButtons) ?? {}) as GamepadDialogClasses;
+export const quickAccessControlsClasses = (findClassModule((m) => m.BatteryPercentageLabel && m.PanelSection && !m['vr-dashboard-bar-height'] && !m.QuickAccessMenu && !m.QuickAccess && !m.PerfProfileInfo) ?? {}) as QuickAccessControlsClasses;
+export const updaterFieldClasses = (findClassModule((m) => m.OOBEUpdateStatusContainer) ?? {}) as UpdaterFieldClasses;
+export const playSectionClasses = (findClassModule((m) => m.PlayBarDetailLabel) ?? {}) as PlaySectionClasses;
+export const gamepadSliderClasses = (findClassModule((m) => m.SliderControlPanelGroup) ?? {}) as GamepadSliderClasses;
+export const appDetailsHeaderClasses = (findClassModule((m) => m.TopCapsule) ?? {}) as AppDetailsHeaderClasses;
+export const appDetailsClasses = (findClassModule((m) => m.HeaderLoaded) ?? {}) as AppDetailsClasses;
+export const gamepadUIClasses = (findClassModule((m) => m.BasicUiRoot) ?? {}) as GamepadUIClasses;
+export const gamepadTabbedPageClasses = (findClassModule((m) => m.GamepadTabbedPage) ?? {}) as GamepadTabbedPageClasses;
+export const gamepadContextMenuClasses = (findClassModule((m) => m.BasicContextMenuModal) ?? {}) as GamepadContextMenuClasses;
+export const achievementListClasses = (findClassModule((m) => m.AchievementListItemBase && !m.Page) ?? {}) as AchievementListClasses;
+export const achievementPageClasses = (findClassModule((m) => m.AchievementListItemBase && m.Page) ?? {}) as AchievementPageClasses;
+export const mainMenuAppRunningClasses = (findClassModule((m) => m.AppRunningControls && m.OverlayAchievements) ?? {}) as MainMenuAppRunningClasses;
+export const basicAppDetailsSectionStylerClasses = (findClassModule((m) => m.AppDetailsRoot) ?? {}) as BasicAppDetailsSectionStylerClasses;
+export const steamSpinnerClasses = (findClassModule(m => m.SpinnerLoaderContainer) ?? {}) as SteamSpinnerClasses;
+export const footerClasses = (findClassModule(m => m.QuickAccessFooter) ?? {}) as FooterClasses;
+export const appActionButtonClasses = (findClassModule(m => m.PlayButtonContainer) ?? {}) as AppActionButtonClasses;
+export const libraryAssetImageClasses = (findClassModule(m => m.LongTitles && m.GreyBackground) ?? {}) as LibraryAssetImageClasses;
+export const gamepadLibraryClasses = (findClassModule(m => m.GamepadLibrary) ?? {}) as GamepadLibraryClasses;
+export const focusRingClasses = (findClassModule(m => m.FocusRingRoot) ?? {}) as FocusRingClasses;
+export const searchBarClasses = (findClassModule(m => m.SearchAndTitleContainer) ?? {}) as SearchBarClasses;
+export const mainBrowserClasses = (findClassModule(m => m.MainBrowserContainer) ?? {}) as MainBrowserClasses;
+export const vrDashboardClasses = (findClassModule(m => m.DashboardBarPopupContents && m.DashboardBar) ?? {}) as VRDashboardClasses;
 
 /**
  * @deprecated please use quickAccessMenuClasses instead

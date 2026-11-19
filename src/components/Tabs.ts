@@ -1,5 +1,6 @@
 import { FC, ReactNode } from 'react';
-import { findModuleByExport } from '../webpack';
+import { createPropListRegex } from '../utils';
+import { Export, findModuleByExport, findModuleExport } from '../webpack';
 import { FooterLegendProps } from './FooterLegend';
 
 /**
@@ -67,4 +68,8 @@ const tabsModule = findModuleByExport(e => e?.toString?.()?.includes(".TabRowTab
 /**
  * Tabs component as used in the library and media tabs. See {@link TabsProps}.
  */
-export const Tabs = tabsModule && Object.values(tabsModule).find((e: any) => e?.type?.toString?.()?.includes("(function()")) as FC<TabsProps>;
+const viteTabsRegex = createPropListRegex(['activeTab', 'autoFocusContents', 'cancelSkipTabHeader', 'tabs']);
+
+// old || vite
+export const Tabs = ((tabsModule && Object.values(tabsModule).find((e: any) => e?.type?.toString?.()?.includes("(function()"))) ||
+  findModuleExport((e: Export) => typeof e == 'function' && viteTabsRegex.test(e.toString()))) as FC<TabsProps>;

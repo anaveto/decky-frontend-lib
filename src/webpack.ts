@@ -3,6 +3,7 @@ import Logger from './logger';
 declare global {
   interface Window {
     webpackChunksteamui: any;
+    deckyViteModules?: Record<string, any>;
   }
 }
 
@@ -18,9 +19,55 @@ type FindFn = (module: any) => any;
 
 export let modules = new Map<ModuleID, Module>();
 
+// Vite builds of Steam (Rolldown + Oxc) print string literals as template literals and destructure with let.
+// Present function source the way the existing filters expect it.
+function normalizeFunctionSource() {
+  const fnToString = Function.prototype.toString;
+  const templateLiteral = /`(?:[^`\\]|\\[\s\S])*`/g;
+  const toPlainString = (literal: string) =>
+    literal.includes('${') || /["\\\n]/.test(literal) ? literal : `"${literal.slice(1, -1)}"`;
+  const cache = new WeakMap<Function, string>();
+  Function.prototype.toString = function (this: Function) {
+    const source = fnToString.call(this);
+    if (!source.includes('`') && !source.includes('let{')) return source;
+    let normalized = cache.get(this);
+    if (normalized === undefined) {
+      normalized = source.replace(templateLiteral, toPlainString).replace(/\blet\{/g, 'const{');
+      cache.set(this, normalized);
+    }
+    return normalized;
+  };
+}
+
+// Vite builds of Steam have no webpack module registry. The loader collects the top-level bindings of Steam's main
+// chunk into window.deckyViteModules: every object binding becomes a module, and all bindings together form one more.
+function initViteModuleCache(bindings: Record<string, any>) {
+  normalizeFunctionSource();
+  const scope: Record<string, any> = {};
+  for (const [name, value] of Object.entries(bindings)) {
+    if (value == null || typeof value === 'symbol') continue;
+    try {
+      if (typeof value.toString !== 'function') continue;
+      value.toString();
+    } catch (e) {
+      continue;
+    }
+    scope[name] = value;
+    if (typeof value === 'object' && !Array.isArray(value) && !value.$$typeof && value !== window && !(value instanceof Node)) {
+      modules.set(name, value);
+    }
+  }
+  modules.set('vite', scope);
+}
+
 function initModuleCache() {
   const startTime = performance.now();
   logger.group('Webpack Module Init');
+  if (!window.webpackChunksteamui && window.deckyViteModules) {
+    initViteModuleCache(window.deckyViteModules);
+    logger.groupEnd(`Vite modules initialized in ${performance.now() - startTime}ms...`);
+    return;
+  }
   // Webpack 5
   // Generate a fake module ID
   const id = Symbol("@decky/ui");
